@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Airline Booking System</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+      }
+      form {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      input,
+      select {
+        width: 100%;
+        height: 30px;
+        margin-bottom: 15px;
+        padding: 5px;
+        box-sizing: border-box;
+      }
+      button {
+        width: 100%;
+        height: 40px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .result {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>AIRLINE BOOKING SYSTEM</h1>
+
+    <div id="flight-form">
+      <h2>Manage Flights</h2>
+      <form id="create-flight-form">
+        <label for="flight-number">Flight Number:</label>
+        <input type="text" id="flight-number" name="flight_number" />
+
+        <label for="departure">Departure:</label>
+        <input type="datetime-local" id="departure" name="departure" />
+
+        <label for="arrival">Arrival:</label>
+        <input type="datetime-local" id="arrival" name="arrival" />
+
+        <label for="origin">Origin:</label>
+        <input type="text" id="origin" name="origin" />
+
+        <label for="destination">Destination:</label>
+        <input type="text" id="destination" name="destination" />
+
+        <label for="capacity">Capacity:</label>
+        <input type="number" id="capacity" name="capacity" />
+
+        <button onclick="createFlight(event)">Create Flight</button>
+      </form>
+
+      <div id="flight-result"></div>
+    </div>
+
+    <div id="passenger-form">
+      <h2>Manage Passengers</h2>
+      <form id="create-passenger-form">
+        <label for="first-name">First Name:</label>
+        <input type="text" id="first-name" name="first_name" />
+
+        <label for="last-name">Last Name:</label>
+        <input type="text" id="last-name" name="last_name" />
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" />
+
+        <label for="phone-number">Phone Number:</label>
+        <input type="tel" id="phone-number" name="phone_number" />
+
+        <label for="flight-select">Select Flight:</label>
+        <select id="flight-select" name="flight"></select>
+
+        <button onclick="createPassenger(event)">Create Passenger</button>
+      </form>
+
+      <div id="passenger-result"></div>
+    </div>
+
+    <script>
+      const apiBase = "/api/v1/";
+
+      // Populate flight select dropdown
+      fetch(apiBase + "flights/")
+        .then((response) => response.json())
+        .then((data) => {
+          const flightSelect = document.getElementById("flight-select");
+          data.forEach((flight) => {
+            const option = document.createElement("option");
+            option.value = flight.id;
+            option.textContent = `${flight.flight_number} - ${flight.origin} to ${flight.destination}`;
+            flightSelect.appendChild(option);
+          });
+        });
+
+      function createFlight(event) {
+        event.preventDefault();
+        const formData = new FormData(
+          document.getElementById("create-flight-form")
+        );
+        fetch(apiBase + "flights/", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("flight-result").innerHTML = `
+                    <div class="result">
+                        Flight created successfully!<br>
+                        ID: ${data.id}<br>
+                        Number: ${data.flight_number}<br>
+                        Origin: ${data.origin}<br>
+                        Destination: ${data.destination}
+                    </div>
+                `;
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      function createPassenger(event) {
+        event.preventDefault();
+        const formData = new FormData(
+          document.getElementById("create-passenger-form")
+        );
+        fetch(apiBase + "passengers/", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("passenger-result").innerHTML = `
+                    <div class="result">
+                        Passenger created successfully!<br>
+                        ID: ${data.id}<br>
+                        Name: ${data.first_name} ${data.last_name}<br>
+                        Email: ${data.email}<br>
+                        Flight: ${data.flight.flight_number}
+                    </div>
+                `;
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+    </script>
+  </body>
+</html>
